@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'from' => ['address' => null, 'name' => null],
+    'from' => ['address' => 'dummytesting7@gmail.com', 'name' => 'Dummy Testing'],
 
     /*
     |--------------------------------------------------------------------------
@@ -80,7 +80,7 @@ return [
     |
     */
 
-    'username' => env('MAIL_USERNAME'),
+    'username' => env('dummytesting7@gmail.com'),
 
     /*
     |--------------------------------------------------------------------------
@@ -93,7 +93,7 @@ return [
     |
     */
 
-    'password' => env('MAIL_PASSWORD'),
+    'password' => env('UnpluggedWeb'),
 
     /*
     |--------------------------------------------------------------------------

@@ -17,9 +17,23 @@ Route::get('/login', ['as' => 'login', 'uses' => 'Auth\AuthController@getLogin']
 Route::post('/login', ['as' => 'login', 'uses' => 'Auth\AuthController@postLogin']);
 Route::get('/logout', ['as' => 'logout', 'uses' => 'Auth\AuthController@getLogout']);
 
-Route::group(['middleware' => 'auth'], function(){
-    Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'HomeController@dashboard']);
-});
-
 Route::get('/register', ['as' => 'register', 'uses' => 'Auth\AuthController@getRegister']);
 Route::post('/register', ['as' => 'register', 'uses' => 'Auth\AuthController@postRegister']);
+
+Route::get('/forgetpassword', ['as' => 'forget-password', 'uses' => 'Auth\AuthController@getForget']);
+Route::post('/forgetpassword', ['as' => 'forget-password', 'uses' => 'Auth\AuthController@postForget']);
+
+Route::get('/accounts/activate/{code}', ['as' => 'activate','uses' => 'Auth\AuthController@activate']);
+
+Route::group(['middleware' => 'auth'], function(){
+    
+    //Normal User
+    Route::group(['middleware' => 'normal_user'], function(){
+        Route::get('dashboard', ['as' => 'dashboard', 'uses' => 'HomeController@dashboard']);
+    });
+    //Admin
+    Route::group(['middleware' => 'admin'], function(){
+        Route::get('admin', ['as' => 'admin', 'uses' => 'AdminController@index']);
+    });
+});
+
