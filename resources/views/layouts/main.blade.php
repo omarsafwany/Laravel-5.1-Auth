@@ -23,6 +23,7 @@
             <!-- Right Nav Section -->
             <ul class="right">    
              @if(\Auth::user())
+                <li><a href="{{route('change-password')}}">Change Password</a></li>
                 <li><a href="{{route('logout')}}">Logout</a></li>
              @else
                 <li><a href="{{route('login')}}">Login</a></li>

@@ -100,13 +100,35 @@ class AuthController extends Controller
     public function getForget() {
         return view('auth.forget-password');
     }
+    
+    public function postForget(){
+        $user = User::where('email', \Input::get('email'))->first();
+        if($user->count()){
+            $code = str_random(60);
+            $user->code = $code;
+//            $password = str_random(10);
+            $password = 'password';
+            $user->password_temp = bcrypt($password);
+
+            if($user->save()){
+                \Mail::queue('emails.auth.forget', [
+                    'link' => route('recover', $code),
+                    'name' => $user->name,
+                    'password' => $password
+                ], function($message) use ($user){
+                    $message->to($user->email)->subject('Your new password');
+                });
+
+                return redirect()->route('login')->with('global', 'We have sent you a new password by email!');
+            }
+        }
+    }
 
     public function getRegister() {
         return view('auth.register');
     }
     
     public function postRegister(){
-//        return \Input::all();
         $user = new User;
         $user->name = \Input::get('name');
         $user->email = \Input::get('email');
@@ -116,22 +138,12 @@ class AuthController extends Controller
         $code = str_random(60);
         $user->code = $code;
         $user->save();
-        \Mail::queue('emails.auth.activate', [
-                'link' => route('activate', $code),
-                'name' => \Input::get('name')],
-                function($message) use ($user){
-                    $message->to($user->email, $user->name)->subject('Activate your account');
-                }
-            );
-        return 'x';
-//        return \User::create([
-//            'name' => $data['name'],
-//            'email' => $data['email'],
-//            'password' => bcrypt($data['password']),
-//            'active' => 0,
-//            'admin' => 0,
-//            'code' => $code
-//        ]);
+        //Check mail as it's not correct
+        //use tinker to test
+        \Mail::queue('emails.auth.activate', ['link' => route('activate', $code), 'name' => $user->name], function ($m) use ($user) {
+            $m->to($user->email, $user->name)->subject('Activate your account!');
+        });
+        return redirect()->route('login')->with('global', 'Success. Check your mail for activation mail');
     }
     
     public function activate($code){
@@ -149,4 +161,25 @@ class AuthController extends Controller
 
 		return redirect()->route('/');
 	}
+    
+    public function recover($code){
+		$user = User::where('code', '=', $code)->where('password_temp', '!=', '')->first();
+
+		if($user->count()){
+			$user->password = $user->password_temp;
+			$user->password_temp = '';
+			$user->code = '';
+
+			if($user->save()){
+				return redirect()->route('login')->withGlobal('Your account has been recovered and you can signin with your new password!');
+			}
+		}
+
+		return redirect()->route('login')->withWarning('Could not recover your account!');
+
+	}
+    
+    public function getChangePassword(){
+        return view('auth.change-password');
+    }
 }

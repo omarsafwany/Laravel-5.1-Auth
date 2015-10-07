@@ -23,9 +23,16 @@ Route::post('/register', ['as' => 'register', 'uses' => 'Auth\AuthController@pos
 Route::get('/forgetpassword', ['as' => 'forget-password', 'uses' => 'Auth\AuthController@getForget']);
 Route::post('/forgetpassword', ['as' => 'forget-password', 'uses' => 'Auth\AuthController@postForget']);
 
-Route::get('/accounts/activate/{code}', ['as' => 'activate','uses' => 'Auth\AuthController@activate']);
+Route::get('/activate/{code}', ['as' => 'activate','uses' => 'Auth\AuthController@activate']);
+Route::get('/recover/{code}', ['as' => 'recover','uses' => 'Auth\AuthController@recover']); 
+Route::get('/resend/{mail}', ['as' => 'resend-activation-mail','uses' => 'Auth\AuthController@resend']);	
+
+
 
 Route::group(['middleware' => 'auth'], function(){
+    
+    Route::get('/changepassword', ['as' => 'change-password', 'uses' => 'Auth\AuthController@getChangePassword']);
+    Route::post('/changepassword', ['as' => 'change-password', 'uses' => 'Auth\AuthController@postChangePassword']);
     
     //Normal User
     Route::group(['middleware' => 'normal_user'], function(){
@@ -34,6 +41,7 @@ Route::group(['middleware' => 'auth'], function(){
     //Admin
     Route::group(['middleware' => 'admin'], function(){
         Route::get('admin', ['as' => 'admin', 'uses' => 'AdminController@index']);
-    });
+    });   
+    
 });
 

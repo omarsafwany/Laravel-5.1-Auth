@@ -19,7 +19,7 @@ class CreateUsersTable extends Migration
             $table->integer('admin');
             $table->integer('active');
             $table->string('password', 60);
-            $table->string('temp_password', 60);
+            $table->string('password_temp', 60);
             $table->string('code', 60);
             $table->rememberToken();
             $table->timestamps();
