@@ -33,7 +33,8 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('guest', ['except' => 'getLogout']);
+//        $this->middleware('guest', ['except' => 'getLogout']);
+//        $this->middleware('guest', ['except' => 'getLogout']);
     }
 
     /**
@@ -181,5 +182,36 @@ class AuthController extends Controller
     
     public function getChangePassword(){
         return view('auth.change-password');
+    }
+    
+    public function postChangePassword(){
+        $validator = Validator::make(\Input::all(),[
+			'old_password' => 'required',
+			'new_password' => 'required|min:6',
+			'password_confirmation' => 'required|same:new_password'
+		]);
+
+		if($validator->fails()){
+			return redirect()->back()->withErrors($validator);
+		} else{
+
+			$user = User::find(\Auth::user()->id);
+
+			$old_password = \Input::get('old_password');
+			$new_password = \Input::get('new_password');
+
+			if($old_password == $new_password)
+                    return redirect()->back()->withErrors(array('new_password' => 'Your new password must be different from the old one.'));
+
+			if(\Hash::check($old_password, $user->getAuthPassword())){
+				$user->password = \Hash::make($new_password);
+				if($user->save())
+					return redirect()->route('index')->withGlobal('Your password has been changed successfully!');
+			} else{
+				return redirect()->back()->withErrors(array('old_password' => 'Your old password is incorrect!'));
+			}
+
+		}
+		return redirect()->back()->withWarning('Sorry, your password cannot be changed!');
     }
 }
