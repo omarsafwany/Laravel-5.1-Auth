@@ -17,6 +17,10 @@ Route::get('/login', ['as' => 'login', 'uses' => 'Auth\AuthController@getLogin']
 Route::post('/login', ['as' => 'login', 'uses' => 'Auth\AuthController@postLogin']);
 Route::get('/logout', ['as' => 'logout', 'uses' => 'Auth\AuthController@getLogout']);
 
+//Social Authentication
+Route::get('/login/facebook',['uses' => 'Auth\AuthController@redirectToProvider','as'   => 'auth.getSocialAuth']);
+Route::get('/login/callback/facebook',['uses' => 'Auth\AuthController@handleProviderCallback','as'   => 'auth.getSocialAuthCallback']);
+
 Route::get('/register', ['as' => 'register', 'uses' => 'Auth\AuthController@getRegister']);
 Route::post('/register', ['as' => 'register', 'uses' => 'Auth\AuthController@postRegister']);
 

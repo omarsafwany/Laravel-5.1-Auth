@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 use App\Http\Requests\auth\LoginRequest;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -31,10 +32,54 @@ class AuthController extends Controller
      *
      * @return void
      */
-    public function __construct()
+    
+    public function redirectToProvider()
     {
-//        $this->middleware('guest', ['except' => 'getLogout']);
-//        $this->middleware('guest', ['except' => 'getLogout']);
+        return \Socialite::driver('facebook')->redirect();
+    }
+
+    /**
+     * Obtain the user information from GitHub.
+     *
+     * @return Response
+     */
+    public function handleProviderCallback()
+    {
+        try {
+            $user = \Socialite::driver('facebook')->user();
+        } catch (Exception $e) {
+            return Redirect::to('index');
+        }
+        $authUser = $this->findOrCreateUser($user);
+
+        \Auth::login($authUser, true);
+
+        return redirect()->intended('dashboard')->with('global', 'Welcome');
+    }
+    
+    /**
+     * Return user if exists; create and return if doesn't
+     *
+     * @param $githubUser
+     * @return User
+     */
+    public function findOrCreateUser($facebookUser)
+    {
+        if ($authUser = User::where('facebook_id', $facebookUser->id)->first()) {
+            return $authUser;
+        }
+        $code = str_random(60);
+        $user =  User::create([
+            'email' => $facebookUser->email,
+            'facebook_id' => $facebookUser->id,
+            'name' => $facebookUser->name,
+            'admin' => 0,
+            'active' => 0,
+            'code' => $code
+        ]);
+        
+        $user->save();
+        return $user;
     }
 
     /**
@@ -51,34 +96,6 @@ class AuthController extends Controller
             'password' => 'required|confirmed|min:6',
         ]);
     }
-
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return User
-     */
-//    protected function create(array $data)
-//    {
-////        return 'y';
-////        $code = str_random(60);
-////        \Mail::queue('emails.auth.activate', [
-////                'link' => route('activate', $code),
-////                'name' => $data['name']],
-////                function($message) use ($user){
-////                    $message->to($user->email, $user->name)->subject('Activate your account');
-////                }
-////            );
-////        return 'x';
-////        return \User::create([
-////            'name' => $data['name'],
-////            'email' => $data['email'],
-////            'password' => bcrypt($data['password']),
-////            'active' => 0,
-////            'admin' => 0,
-////            'code' => $code
-////        ]);
-//    }
     
     public function getLogin() {
         return view('auth.login');
@@ -86,15 +103,19 @@ class AuthController extends Controller
     
     public function postLogin(LoginRequest $request)
     {
-        if (\Auth::attempt(['email' => \Input::get('email'), 'password' => (\Input::get('password')), 'active' => 1])) {
+        if (\Auth::attempt(['email' => \Input::get('email'), 'password' => (\Input::get('password'))])) {
             // Authentication passed...
-            if(\Auth::user()->admin){
-                return redirect()->intended('admin');
+            if(\Auth::user()->active){
+                if(\Auth::user()->admin){
+                    return redirect()->intended('admin');
+                }else{
+                    return redirect()->intended('dashboard');
+                } 
             }else{
-                return redirect()->intended('dashboard');
-            } 
+                return redirect()->route('login')->with('activate', 'Account not activated yet.');
+            }
         }else{
-            return redirect()->route('login')->with('activate', 'Accout not acctivated');
+            return redirect()->route('login')->with('error', 'Check your email and password.');
         }
     }
     

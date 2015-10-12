@@ -18,6 +18,9 @@
             <div class="">
             {!! Form::submit('Submit', array('class' => 'button right')) !!}
             </div>
+            <div>
+                <a href="{{route('auth.getSocialAuth')}}">Facebook Login</a>
+            </div>
         </div>
     </div>
 {!! Form::close() !!}
