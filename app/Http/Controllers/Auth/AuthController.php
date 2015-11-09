@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 use App\Http\Requests\auth\LoginRequest;
+use App\Http\Requests\auth\RegisterRequest;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
@@ -150,11 +151,11 @@ class AuthController extends Controller
         return view('auth.register');
     }
     
-    public function postRegister(){
+    public function postRegister(RegisterRequest $request){
         $user = new User;
-        $user->name = \Input::get('name');
-        $user->email = \Input::get('email');
-        $user->password = bcrypt(\Input::get('password'));
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = bcrypt($request->password);
         $user->admin = 0;
         $user->active = 0;
         $code = str_random(60);
@@ -162,9 +163,9 @@ class AuthController extends Controller
         $user->save();
         //Check mail as it's not correct
         //use tinker to test
-        \Mail::queue('emails.auth.activate', ['link' => route('activate', $code), 'name' => $user->name], function ($m) use ($user) {
-            $m->to($user->email, $user->name)->subject('Activate your account!');
-        });
+//        \Mail::queue('emails.auth.activate', ['link' => route('activate', $code), 'name' => $user->name], function ($m) use ($user) {
+//            $m->to($user->email, $user->name)->subject('Activate your account!');
+//        });
         return redirect()->route('login')->with('global', 'Success. Check your mail for activation mail');
     }
     

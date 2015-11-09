@@ -48,9 +48,9 @@
         </div>
     @endif
 
-    @if(\Session::has('reqlog'))
-        <div class="alert-box reqlog">
-            <h4>{{ \Session::get('reqlog') }}</h4>
+    @if(\Session::has('error'))
+        <div class="alert-box alert error">
+            <h4>{{ \Session::get('error') }}</h4>
             <a href="#" class="close">&times;</a>
         </div>
     @endif
